@@ -46,7 +46,7 @@ class Discriminator(nn.Module):
 
     def forward(self, x):
         output = self.net(x)
-        return output.view()
+        return output.view(-1)
 
 
 def data_generator():
@@ -95,23 +95,42 @@ def main():
     D = Discriminator().to(device)
     # print(G)
     # print(D)
+    optim_G = optim.Adam(G.parameters(), lr=5e-4, betas=(0.5, 0.9))
+    optim_D = optim.Adam(D.parameters(), lr=5e-4, betas=(0.5, 0.9))
+
     for epoch in range(50000):
 
         # 1. train Discriminator
         for _ in range(5):
             # 1.1. train on real data
             x = next(data_iter)
-            x = torch.from_numpy(x).cuda()
+            x = torch.from_numpy(x).to(device)
             predr = D(x)
             lossr = -torch.log(predr).sum()
 
             # 1.2. train on generated data
-            z = next(data_iter)
-            z = torch.from_numpy(z).cuda()
+            z = torch.randn(batch_size, 2).to(device)
             predg = D(G(z).detach())
             lossg = -torch.log(1. - predg).sum()
 
+            # aggregate all
+            loss_D = (lossr + lossg) / 2 * batch_size
+
+            # optimize
+            optim_D.zero_grad()
+            loss_D.backward()
+            optim_D.step()
+
         # 2. train Generator
+        z = torch.randn(batch_size, 2).to(device)
+        loss_G = torch.log(1. - D(G(z))).mean()
+
+        optim_G.zero_grad()
+        loss_G.backward()
+        optim_G.step()
+
+        if epoch % 100 == 0:
+            print(loss_D.item(), loss_G.item())
 
 
 if __name__ == '__main__':
