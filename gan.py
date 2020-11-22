@@ -2,6 +2,7 @@ import torch
 from torch import nn, optim, autograd
 import numpy as np
 import random
+import matplotlib.pyplot as plt
 
 h_dim = 400
 batch_size = 512
