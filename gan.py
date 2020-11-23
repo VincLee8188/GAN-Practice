@@ -146,6 +146,7 @@ def main():
     # print(D)
     optim_G = optim.Adam(G.parameters(), lr=5e-4, betas=(0.5, 0.9))
     optim_D = optim.Adam(D.parameters(), lr=5e-4, betas=(0.5, 0.9))
+    viz.line([[0, 0]], [0], win='loss', opts=dict(title='loss', legend=['D', 'G']))
 
     for epoch in range(EPOCH):
 
